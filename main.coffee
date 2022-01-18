@@ -4,6 +4,14 @@ fs = require "./orbfs.coffee"
 
 syntax_cfg_path = "./config/syntax.cfg"
 
+
+Array.prototype.remove = (value) ->
+    i = this.indexOf value
+    if i isnt -1 then this.splice i, 1 else this
+    
+
+
+
 printHelp = () ->
     console.log "Help printed."
 

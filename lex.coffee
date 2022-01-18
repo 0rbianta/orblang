@@ -25,6 +25,15 @@ handle_error = (lex_result) ->
 
 
 smart_cut = (code) ->
+    # Delete comment lines before processing
+    nc = ""
+    for line in code.split "\n"
+        if line[0] isnt "#"
+            # adds extra line break at end of the code. It's fine
+            nc += line + "\n"
+
+    code = nc
+
     code = code.replaceAll "\n", " "
     is_passing = [no, null]
     out = []
