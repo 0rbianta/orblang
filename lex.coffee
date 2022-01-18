@@ -9,6 +9,20 @@ exports.keywords =
 keywords = []
 exports.ignore = 
 ignore = []
+exports.operators = 
+operators = []
+exports.variables = 
+variables = []
+
+
+
+# TODO: handle_error
+handle_error = (lex_result) ->
+    for info in lex_result
+        token = info[0]
+        word = info[1]
+
+
 
 smart_cut = (code) ->
     code = code.replaceAll "\n", " "
@@ -47,7 +61,8 @@ smart_cut = (code) ->
 exports.parse_code = 
 parse_code = (code) ->
     out = []
-    for token in smart_cut code
+    sc_data = smart_cut code
+    for token in sc_data
         # console.log token
         if token in ignore
             continue
@@ -56,17 +71,44 @@ parse_code = (code) ->
             if typeof li is "string"
                 if token is li
                     out.push ["%literal%", token]
+                    continue
             else
                 if token.match(li) isnt null
                     out.push ["%literal%", token]
+                    continue
 
         for kw in keywords
             if typeof kw is "string"
                 if token is kw
                     out.push ["%keyword%", token]
+                    continue
             else
                 if token.match(kw) isnt null
                     out.push ["%keyword%", token]
+                    continue
+        
+        for op in operators
+            if typeof op is "string"
+                if token is op
+                    out.push ["%operator%", token]
+                    continue
+            else
+                if token.match(op) isnt null
+                    out.push ["%operator%", token]
+                    continue
+
+        for va in variables
+            if typeof va is "string"
+                if token is va
+                    out.push ["%variable%", token]
+                    continue
+            else
+                if token.match(va) isnt null
+                    out.push ["%variable%", token]
+                    continue
+        
+
+
 
     return out
 
@@ -107,6 +149,13 @@ init = (syntax_cfg_path) ->
             else if syntax is "-ignore"
                 mode = "ignore"
                 continue
+            else if syntax is "-operators"
+                mode = "operators"
+                continue
+            else if syntax is "-variables"
+                mode = "variables"
+                continue
+            
             
             if mode is "literal"
                 literal.push parse_cfg_line syntax
@@ -119,6 +168,12 @@ init = (syntax_cfg_path) ->
 
             if mode is "ignore"
                 ignore.push parse_cfg_line syntax
+            
+            if mode is "operators"
+                operators.push parse_cfg_line syntax
+
+            if mode is "variables"
+                variables.push parse_cfg_line syntax
 
     else
         console.error result[1]

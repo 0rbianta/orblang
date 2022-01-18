@@ -27,4 +27,4 @@ for arg, i in process.argv
             process.exit()
 
         lex_result = lex.parse_code code_raw
-        
+        console.log lex_result

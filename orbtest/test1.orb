@@ -1,3 +1,6 @@
-print "Hello world from orblang!"
-print "Printing to screen by using \"print\" keyword example"
+$a = "Hello world!"
+print $a
+
+# print "Hello world from orblang!"
+# print "Printing to the screen by using \"print\" keyword example"
 
