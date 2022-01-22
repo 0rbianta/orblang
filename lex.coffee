@@ -70,8 +70,10 @@ smart_cut = (code) ->
 exports.parse_code = 
 parse_code = (code) ->
     out = []
+    out_error = []
     sc_data = smart_cut code
     for token in sc_data
+        is_token_classed = no
         # console.log token
         if token in ignore
             continue
@@ -80,46 +82,57 @@ parse_code = (code) ->
             if typeof li is "string"
                 if token is li
                     out.push ["%literal%", token]
+                    is_token_classed = yes
                     continue
             else
                 if token.match(li) isnt null
                     out.push ["%literal%", token]
+                    is_token_classed = yes
                     continue
 
         for kw in keywords
             if typeof kw is "string"
                 if token is kw
                     out.push ["%keyword%", token]
+                    is_token_classed = yes
                     continue
             else
                 if token.match(kw) isnt null
                     out.push ["%keyword%", token]
+                    is_token_classed = yes
                     continue
         
         for op in operators
             if typeof op is "string"
                 if token is op
                     out.push ["%operator%", token]
+                    is_token_classed = yes
                     continue
             else
                 if token.match(op) isnt null
                     out.push ["%operator%", token]
+                    is_token_classed = yes
                     continue
 
         for va in variables
             if typeof va is "string"
                 if token is va
                     out.push ["%variable%", token]
+                    is_token_classed = yes
                     continue
             else
                 if token.match(va) isnt null
                     out.push ["%variable%", token]
+                    is_token_classed = yes
                     continue
+    
+        if not is_token_classed
+            out_error.push token
         
 
 
 
-    return out
+    return [out, out_error]
 
 
 parse_cfg_line = (line) ->
@@ -134,6 +147,19 @@ parse_cfg_line = (line) ->
     else
         out = line
     return out
+
+
+# Note that does not checks regex
+is_safe_to_push = (token, do_exit=[null, no]) ->
+    if not (token in sequences) and not (token in literal) and not (token in keywords) \
+    and not (token in ignore) and not (token in operators) and not (token in variables)
+        yes
+    else
+        if do_exit[1]
+            if do_exit[0] isnt null
+                console.error do_exit[0]
+            process.exit()
+        no
 
 
 exports.init =
@@ -165,24 +191,37 @@ init = (syntax_cfg_path) ->
                 mode = "variables"
                 continue
             
-            
+            token_save_error_msg = "Failed to parse token(s) from config file. is_safe_to_push check failed."
+
             if mode is "literal"
-                literal.push parse_cfg_line syntax
-                    
+                res = parse_cfg_line syntax
+                is_safe_to_push res, [token_save_error_msg, yes]
+                literal.push res
+
             if mode is "sequences"
-                sequences.push parse_cfg_line syntax
+                res = parse_cfg_line syntax
+                is_safe_to_push res, [token_save_error_msg, yes]
+                sequences.push res
 
             if mode is "keywords"
-                keywords.push parse_cfg_line syntax
+                res = parse_cfg_line syntax
+                is_safe_to_push res, [token_save_error_msg, yes]
+                keywords.push res
 
             if mode is "ignore"
-                ignore.push parse_cfg_line syntax
+                res = parse_cfg_line syntax
+                is_safe_to_push res, [token_save_error_msg, yes]
+                ignore.push res
             
             if mode is "operators"
-                operators.push parse_cfg_line syntax
+                res = parse_cfg_line syntax
+                is_safe_to_push res, [token_save_error_msg, yes]
+                operators.push res
 
             if mode is "variables"
-                variables.push parse_cfg_line syntax
+                res = parse_cfg_line syntax
+                is_safe_to_push res, [token_save_error_msg, yes]
+                variables.push res
 
     else
         console.error result[1]

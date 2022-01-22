@@ -34,5 +34,5 @@ for arg, i in process.argv
             console.error code_raw[1]
             process.exit()
 
-        lex_result = lex.parse_code code_raw
-        console.log lex_result
+        lex_results = lex.parse_code code_raw
+        console.log lex_results[0], lex_results[1]
