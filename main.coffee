@@ -3,7 +3,8 @@ semantic = require "./semantic.coffee"
 fs = require "./orbfs.coffee"
 
 
-syntax_cfg_path = "./config/syntax.cfg"
+lex_cfg_path = "./config/lex.cfg"
+semantic_cfg_path = "./config/semantic.cfg"
 
 
 Array.prototype.remove = (value) ->
@@ -24,10 +25,12 @@ exec = (code_raw) ->
             console.error lex_results[1]
             process.exit()
 
-        semantic.analyze lex_results[0]
+        semantic.analyze_and_execute lex_results[0]
 
 
-lex.init syntax_cfg_path
+
+lex.init lex_cfg_path
+semantic.init semantic_cfg_path
 
 
 for arg, i in process.argv

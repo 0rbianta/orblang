@@ -1,8 +1,6 @@
 fs = require "./orbfs.coffee"
 
 
-exports.sequences = 
-sequences = []
 exports.literal = 
 literal = []
 exports.keywords = 
@@ -59,6 +57,7 @@ smart_cut = (code) ->
     return out
 
 
+
 exports.parse_code = 
 parse_code = (code) ->
     out = []
@@ -71,14 +70,16 @@ parse_code = (code) ->
             continue
 
         for li in literal
+            li_type = li[1]
+            li = li[0]
             if typeof li is "string"
                 if token is li
-                    out.push ["%literal%", token]
+                    out.push ["%literal%", [token, li_type]]
                     is_token_classed = yes
                     continue
             else
                 if token.match(li) isnt null
-                    out.push ["%literal%", token]
+                    out.push ["%literal%", [token, li_type]]
                     is_token_classed = yes
                     continue
 
@@ -127,8 +128,17 @@ parse_code = (code) ->
     return [out, out_error]
 
 
-parse_cfg_line = (line) ->
+parse_cfg_line = (line, is_literal=false) ->
     out = ""
+    type = ""
+    if is_literal
+        if / =lit= /.test line
+            lit = line.split(" =lit= ")
+            line = lit[0]
+            type = lit[1]
+        else
+            console.error " =lit= key not found on #{line} while loading lexical analyzer."
+            process.exit()
     if line[..4] is "reg->"
         reg = ///#{line[5..line.length]}///
         # add regex here
@@ -138,13 +148,16 @@ parse_cfg_line = (line) ->
         out = ch
     else
         out = line
-    return out
+    if not is_literal
+        return out
+    else
+        return [out, type]
 
 
 # Note that does not checks regex
 is_safe_to_push = (token, do_exit=[null, no]) ->
-    if not (token in sequences) and not (token in literal) and not (token in keywords) \
-    and not (token in ignore) and not (token in operators) and not (token in variables)
+    if not (token in literal) and not (token in keywords) and \
+    not (token in ignore) and not (token in operators) and not (token in variables)
         yes
     else
         if do_exit[1]
@@ -155,8 +168,8 @@ is_safe_to_push = (token, do_exit=[null, no]) ->
 
 
 exports.init =
-init = (syntax_cfg_path) ->
-    result = fs.readFile syntax_cfg_path
+init = (lex_cfg_path) ->
+    result = fs.readFile lex_cfg_path
     if typeof result is "string"
         mode = "literal"
         for syntax in result.split "\n"
@@ -166,9 +179,6 @@ init = (syntax_cfg_path) ->
 
             if syntax is "-literal"
                 mode = "literal"
-                continue
-            else if syntax is "-sequences"
-                mode = "sequences"
                 continue
             else if syntax is "-keywords"
                 mode = "keywords"
@@ -186,14 +196,9 @@ init = (syntax_cfg_path) ->
             token_save_error_msg = "Failed to parse token(s) from config file. is_safe_to_push check failed."
 
             if mode is "literal"
-                res = parse_cfg_line syntax
+                res = parse_cfg_line syntax, yes
                 is_safe_to_push res, [token_save_error_msg, yes]
                 literal.push res
-
-            if mode is "sequences"
-                res = parse_cfg_line syntax
-                is_safe_to_push res, [token_save_error_msg, yes]
-                sequences.push res
 
             if mode is "keywords"
                 res = parse_cfg_line syntax
