@@ -3,7 +3,8 @@ print $a
 
 #Comment test
 
-something should not be there?
+# Error handling test: 
+# something should not be there?
 
 print "Hello world from orblang!"
 print "Printing to the screen by using \"print\" keyword example"

@@ -1,4 +1,5 @@
 lex = require "./lex.coffee"
+semantic = require "./semantic.coffee"
 fs = require "./orbfs.coffee"
 
 
@@ -16,8 +17,14 @@ printHelp = () ->
     console.log "Help printed."
 
 
-exec = (code_str) ->
-    undefined
+exec = (code_raw) ->
+        lex_results = lex.parse_code code_raw
+        if lex_results[1].length isnt 0
+            console.error "Syntax error. Dumping..."
+            console.error lex_results[1]
+            process.exit()
+
+        semantic.analyze lex_results[0]
 
 
 lex.init syntax_cfg_path
@@ -34,5 +41,4 @@ for arg, i in process.argv
             console.error code_raw[1]
             process.exit()
 
-        lex_results = lex.parse_code code_raw
-        console.log lex_results[0], lex_results[1]
+        exec(code_raw)

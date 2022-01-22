@@ -16,14 +16,6 @@ variables = []
 
 
 
-# TODO: handle_error
-handle_error = (lex_result) ->
-    for info in lex_result
-        token = info[0]
-        word = info[1]
-
-
-
 smart_cut = (code) ->
     # Delete comment lines before processing
     nc = ""
