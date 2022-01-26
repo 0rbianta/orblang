@@ -25,7 +25,8 @@ exec = (code_raw) ->
             console.error lex_results[1]
             process.exit()
 
-        semantic.analyze_and_execute lex_results[0]
+        typed_lex_results = semantic.gen_var_types lex_results[0]
+        semantic.analyze_and_execute typed_lex_results
 
 
 
